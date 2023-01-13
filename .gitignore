@@ -1,7 +1,2 @@
 node_modules
 .wwebjs_auth
-store/bci/*
-store/boleto_iptu/*
-store/boleto_tmrs/*
-store/cnega/*
-store/extract_general/*
