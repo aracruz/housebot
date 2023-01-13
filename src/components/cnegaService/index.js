@@ -5,6 +5,8 @@ const cnega = require('./cnegaSearch');
 
 const cnegaService = async (contactUser, msg, contactNumber, nomeAtendente, client, chat) => {
 
+   const tipoDocValido = +contactUser.actual_level === 2 ? validaCpfCnpj(msg.body) : 'insc'
+
    if (+contactUser.actual_level === 0) {
       delay(2000).then(async function () {
          msg.react('👍');
@@ -70,7 +72,7 @@ const cnegaService = async (contactUser, msg, contactNumber, nomeAtendente, clie
          return false;
       }
 
-      const tipoDocValido = +contactUser.actual_level === 2 ? validaCpfCnpj(msg.body) : 'insc'
+     
 
       if (tipoDocValido) {
 
@@ -119,20 +121,13 @@ const cnegaService = async (contactUser, msg, contactNumber, nomeAtendente, clie
          }
 
          if (resultNavegation.status === 200 && resultNavegation.result === -1) {
-            const buttonMessage = new Buttons(houseMessage(resultNavegation.message ?? `Não há Certidão Negativa`),
-               [{
-                  id: `view_extract`,
-                  body: 'Ver Extrato 📃'
-               },
-               {
-                  id: 'reset_service',
-                  body: 'Nova conulta ♻️'
-               },
-               {
-                  id: 'end_service',
-                  body: 'Finalizar Atendimento 👋🏼'
-               },
-               ], '', '')
+            const listOptionReturn = []
+
+            if (tipoDocValido != 'insc') listOptionReturn.push({id: `view_extract`,body: 'Ver Extrato 📃'})
+            listOptionReturn.push({id: 'reset_service', body: 'Nova conulta ♻️'}),
+            listOptionReturn.push({id: 'end_service', body: 'Finalizar Atendimento 👋🏼'})
+            
+            const buttonMessage = new Buttons(houseMessage(resultNavegation.message ?? `Não há Certidão Negativa`),listOptionReturn, '', '')
             client.sendMessage(msg.from, buttonMessage);
 
             await ContactController.update({
@@ -160,7 +155,6 @@ const cnegaService = async (contactUser, msg, contactNumber, nomeAtendente, clie
 
       const documentSearch = contactUser.document_encoder
 
-
       if (msg.selectedButtonId === 'view_extract') {
 
          const puppeteer = require('puppeteer');
@@ -184,7 +178,7 @@ const cnegaService = async (contactUser, msg, contactNumber, nomeAtendente, clie
             height: 600
          })
 
-         const pathPDF = `./store/extract_general/${contactUser.document_encoder}.pdf`
+         const pathPDF = `./store/extract_general/extrato_${contactUser.document_num}.pdf`
          await page.goto(`http://nfe.pma.es.gov.br:8081/services/extrato_pagamento_impressao.php?s=Y&cd=${contactUser.document_encoder}`);
          await page.pdf({ path: pathPDF, format: 'A4' });
          await browser.close();
