@@ -15,7 +15,7 @@ const qrcode = require('qrcode');
 const http = require('http');
 const fileUpload = require('express-fileupload');
 
-const port = 8010;
+const port = 8082;
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
